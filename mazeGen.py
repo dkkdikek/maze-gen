@@ -1,16 +1,16 @@
 
 import pygame
 from random import choice
+ # from entities import Cell
 
 #interface implementation:
 res = width, height = 1000, 800
-tile = 100
+tile = 30
 cols , rows = width // tile, height // tile 
 
 pygame.init()
 screen =  pygame.display.set_mode(res)
 clock = pygame.time.Clock()
-
 
 
 class Cell:
@@ -39,8 +39,51 @@ class Cell:
             pygame.draw.line(screen, pygame.Color('darkorange'), (x, y + tile), (x,y), 2)
 
     def checkCell(self, x, y):
-        pass
-        
+        findIndex = lambda x, y: x + y * cols
+        if x < 0 or x > cols - 1 or y < 0 or y > rows - 1:
+            return False
+        return gridCells[findIndex(x,y)]
+    
+    def checkNeighbors(self):
+        neighbors = []
+        top = self.checkCell(self.x,self.y - 1)
+        right = self.checkCell(self.x + 1, self.y)
+        bottom = self.checkCell(self.x, self.y + 1)
+        left = self.checkCell(self.x - 1, self.y)
+        if top and not top.visited:
+            neighbors.append(top)
+        if right and not right.visited:
+            neighbors.append(right)
+        if bottom and not bottom.visited:
+            neighbors.append(bottom)
+        if left and not left.visited:
+            neighbors.append(left)
+        return choice(neighbors) if neighbors else False
+
+
+
+
+
+
+def removeWalls(current, next):
+    dx = current.x - next.x
+    if dx == 1:
+        current.walls['left'] = False
+        next.walls['right'] = False
+    elif dx == -1:
+        current.walls['right'] = False
+        next.walls['left'] = False
+    dy = current.y - next.y
+    if dy == 1:
+        current.walls['top'] = False
+        next.walls['bottom'] = False
+    elif dy == -1:
+        current.walls['bottom'] = False
+        next.walls['top'] = False
+
+
+
+
 gridCells = [Cell(col, row) for row in range(rows) for col in range(cols)]
 currentCell = gridCells[0]
 stack = []
@@ -63,9 +106,17 @@ while True:
     currentCell.visited = True
     currentCell.draw_current_cell()
 
+    nextCell = currentCell.checkNeighbors()
+    if nextCell:
+        nextCell.visited = True
+        stack.append(currentCell)
+        removeWalls(currentCell,nextCell)
+        currentCell = nextCell
+    elif stack:
+        currentCell = stack.pop()
 
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(200)
 
 
 
