@@ -13,6 +13,8 @@ screen =  pygame.display.set_mode(res)
 clock = pygame.time.Clock()
 
 
+#Cell class:
+
 class Cell:
 
     def __init__(self,x,y):
